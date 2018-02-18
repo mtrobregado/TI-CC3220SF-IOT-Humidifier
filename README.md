@@ -12,7 +12,7 @@ Need to do:
 1. Need to install CC3220SF SDK v1.60 to c:/ti.
 
 TI MSP430FR5969 Launchpad was used to drive the Neopixel ring 16 RGB Lights
-using the WS2811 Library used for from https://github.com/ILAMtitan/WS2811Driver
+using ILAMtitan WS2811 Library "https://github.com/ILAMtitan/WS2811Driver".
    
 
    

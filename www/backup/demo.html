@@ -1,0 +1,140 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IOT Humidifier</title>
+<link rel="stylesheet" type="text/css" href="css/style.css">
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/scripts.js"></script>
+<script src="js/com.TI.numericStepper.js"></script>
+
+<script>
+
+$(document).ready(function() {
+
+	startBME280Sensor();
+		
+	$('#humInput').TINumericStepper({
+		"defaultValue":		lastInput,
+		"max":				100,
+		"min":	 			0,
+		"onUpdate": 		function(val){
+			lastInput = val;
+		}
+	});
+});
+
+function ajaxCall(uri, method, qdata, callback, nextFunc) {
+	$.ajax({
+		url: uri,
+		type: method,
+		data: qdata,
+		cache: true,
+		dataType:'text',
+		success: function(data) {
+			callback(data);
+		},
+		error: function(e) {
+		},
+		complete: function (e){
+			if($.isFunction(nextFunc)){
+				nextFunc();
+			}
+		}
+	});
+}
+
+var lastInput = 50;
+var BME280InProccess = true;
+var BME280Interval;
+var BME280Hum = 50;
+
+function getBME280Sensor(){
+	if(BME280InProccess){
+		ajaxCall('/bme280', "GET", "temp&hum", respBME280);
+	}
+}
+
+function respBME280(dr){
+	var data = dr;
+	var characters = data.split("&");
+						
+	for (var i=0; i < characters.length; i++)
+	{
+		var values = characters[i].split("=");
+		$("#"+values[0]).text(values[1]);
+	}
+	
+	BME280Hum = parseInt($("#hum").text());	
+	
+	HumidifierOnOff();
+}
+
+function HumidifierOnOff(){
+
+    if (lastInput > BME280Hum){
+	   ajaxCall('/humonoff', "post", "humset=on", HumidifierResp);
+	}
+	else{
+	   ajaxCall('/humonoff', "post", "humset=off", HumidifierResp);
+	}
+}
+
+function HumidifierResp(){
+
+}
+
+function startBME280Sensor() {
+   BME280Interval = setInterval(getBME280Sensor, 1000);   
+}
+
+</script>
+
+<style>
+body  {
+	background-color:#fff;
+}
+
+</style>
+</head>
+
+<body>
+<div id="popUpcontainer"></div>
+<div id="wrapPopBox"><div id="popUpcontainerBoxIn">
+	<a id="popUpcontainerClose">X</a>	
+	<div id="popUpcontentBox"></div>
+</div>
+</div>
+<!-- wrapper -->
+<div class="wrapper">
+    <nav class="tmenuNav">
+        <ul class="mMenu">
+            <li><a href="demo.html">Demo</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </nav>
+    <div class="headerIn"><div class="menuTop"></div><h1>IOT Humidifier Demo</h1></div>
+	<div class="headerInSub"><div id="wireless" class="wirelessFullSignal"></div><a href="help.html" id="help"></a><div class="subTitle">Demo</div></div>
+    <div class="demoMain">
+	     <fieldset class="wrapSection">
+		 <br style="clear:both;" />
+         <legend>IOT Humidifer</legend>
+		 <p>Click/tap the arrows to change the Desired Room Humidity.</p>
+		 <br><br/>
+         <p for="slider-0"><strong>Desired Humidity (%):</strong></p>
+         <div id="humInput"></div>
+		 <p><strong>Current Humidity (%):</strong> <span id="hum"><i>reloading . . .</i></span></p>
+         <p><strong>Current Temperature (C):</strong> <span id="temp"><i>reloading . . .</i></span></p>		
+		 </div>
+         <br />
+		 </fieldset>
+	</div>
+<!--end wrapper -->
+</div>
+<div style="clear:both;"></div>
+
+
+</body>
+</html>
